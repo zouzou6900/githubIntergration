@@ -5,9 +5,9 @@ name: Tests
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,11 +16,27 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
+    strategy:
+      matrix:
+        # les différents OS sur lesquels faire tourner notre action
+        os: [ubuntu-latest, ubuntu-20.04, windows-2022]
+        version: [20, 18, 16]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v3
-      - name: Run a one-line script
-        run: ls -la
+      # installe node dans la machine
+      - uses: actions/setup-node@v4
+        with:
+          # installe la version 20 de nodeJS
+          node-version: ${{ matrix.version }}
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - run: node -v
+      - run: pnpm -v
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm test
